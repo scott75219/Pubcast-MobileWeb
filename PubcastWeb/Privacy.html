@@ -1,0 +1,85 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">	
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/mobile3.css" />
+<script type="text/javascript" src="js/Populate.js"></script>
+
+<html>
+
+<script type="text/javascript">
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var $=function(v){return document.getElementById(v);}
+	var version="Version 1.0";
+	
+function FillVersion()
+{
+	$("version").innerHTML=version;
+}
+function Menu(){
+	
+	   if( document.getElementById("nav").style.width>"0%"){closeMenu()}
+	   else{
+		   document.getElementById("nav").style.width="70%";
+		   document.getElementById("menu").style.width="70%";
+		   document.getElementById("nav").style.zIndex="999999999999999999";
+		   document.getElementById("Process").style.position="fixed";
+
+	   }
+
+}
+
+function closeMenu(){
+    document.getElementById("nav").style.width="0%";
+    document.getElementById("menu").style.width="0%";
+    document.getElementById("Process").style.position="absolute";
+
+	
+}
+
+</script>
+<head></head>
+<body>
+<div class="super" id="super">
+	<div id="menu" style="position:absolute;width:0%;height:100%;z-index:99999999999999999999999999">
+	  <div id="nav" class="nav">
+			<ul>
+				<li onclick="closeMenu()">Close</li>
+				<li><a href="./Privacy.html"> Refresh</a></li>
+				<li><a href="./index.html"> Home</a></li>
+                <li><a href="./Contact.html"> Contact</a></li>
+				<li><a href="./About.html"> About</a></li>
+
+				
+				
+			</ul> 
+		</div>
+	</div>
+	<div id="topdiv" class="top">
+		<div id="seconddiv" class="header">
+			     <a href="./index.html"><img src="img/hivelogodec0213_transparent.png" width="65px" height="36px" class="ui-btn-left header-hivelogo" style="margin-left: 5px;padding-left:2%" /></a>
+			 <h3 style="float:left;width:50%;font-size: 20px;text-align:center">Pubcast</h3>
+			<div id="hamburger" onclick="Menu()">
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+			
+			<!-- header -->
+
+		</div>	       
+	      </div>
+	<br />
+	<form id="form" name="form"> 
+
+<div id= "Wrapper"class="tableWrapper" style="margin-right:5%;margin-left:5%">
+    <div id="Process" style="width: 100%; overflow-x:hidden" name="Article">
+			<br />	
+			  <iframe src="https://hive.biochemistry.gwu.edu/dna.cgi?cmd=privacy" style="height:100%;width:100%"/>
+
+    </div>
+</div>
+	</form>
+</div>
+</body>
+</html>

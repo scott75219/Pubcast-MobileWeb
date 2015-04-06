@@ -1,0 +1,29 @@
+/*
+ * $Id: documentation.css 6929 2014-08-20 21:15:38Z tetromino $ ::2B6A7A!
+ * Copyright (c) 2005 Dr. Vahan Simonyan and Dr. Raja Mazumder.
+ * This software is protected by U.S. Copyright Law and International
+ * Treaties. Unauthorized use, duplication, reverse engineering, any
+ * form of redistribution, use in part or as a whole, other than by
+ * prior, express, written and signed agreement is subject to penalties.
+ * If you have received this file in error, please notify copyright
+ * holder and destroy this and any other copies. All rights reserved.
+ */
+
+.toolname
+{
+    font-family:"Arial Black";
+    line-height:110%;
+}
+
+.heading
+{
+    text-transform:uppercase;
+    font-weight:bolder;
+}
+
+.pn
+{
+    font-weight:bolder;
+    font-style:italic;
+}
+

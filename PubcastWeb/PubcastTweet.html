@@ -1,0 +1,167 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">	
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/mobile3.css" />
+<script type="text/javascript" src="js/Populate.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.js"></script>
+<script type="text/javascript" src="js/hilitor.js"></script>
+
+
+<html>
+
+<script type="text/javascript">
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var $=function(v){return document.getElementById(v);}
+
+    var title=localStorage.getItem("title");
+    var authors=localStorage.getItem("authors");
+    var date=localStorage.getItem("date");
+    var abs=localStorage.getItem("abstract");
+    var pmid=localStorage.getItem("PMID");
+    var affiliation=localStorage.getItem("affiliation");
+    var journal =localStorage.getItem("journal");
+	var Genes =localStorage.getItem("gene");
+	
+	/*var Height=localStorage.getItem("bar");
+	localStorage.removeItem("bar");
+	localStorage.setItem("LastHeight",Height);*/
+	
+
+function Menu(){
+	
+	   if( document.getElementById("nav").style.width>"0%"){closeMenu()}
+	   else{
+		   document.getElementById("nav").style.width="70%";
+		   document.getElementById("menu").style.width="70%";
+		   document.getElementById("nav").style.zIndex="999999999999999999";
+		   document.getElementById("Process").style.position="fixed";
+
+	   }
+
+}
+
+function closeMenu(){
+    document.getElementById("nav").style.width="0%";
+    document.getElementById("menu").style.width="0%";
+    document.getElementById("Process").style.position="absolute";
+
+	
+}
+
+
+
+function CloseOptions(){
+	Cancel_Options();
+    $("Options").style.height="0%";
+    $("Options").style.display="none";
+    $("Process").style.pointerEvents="auto";
+}
+
+function PopulateArticle(){
+
+        
+        $("title").innerHTML=title;
+        $("authors").innerHTML=authors;
+        $("datejournal").innerHTML=date+"  "+journal;
+        $("PMID").innerHTML="PMID "+pmid;
+        $("affiliation").innerHTML=affiliation;
+				
+		var GeneArray = Genes.split(" ");
+		for(var i=0;i<GeneArray.length;i++)
+		{
+			var gene=GeneArray[i];
+			if(gene!="")
+			{
+				var	url="<a href=\"https://hive.biochemistry.gwu.edu/tools/HiveGenecast/index.php?gene="+gene+"\">"+gene+"</a>";
+				//var url ="TEST";
+				//	abs.replace(abs, url);
+				var re = new RegExp(gene,"g");
+				abs=abs.replace(re, url);
+
+			}
+			$("abstract").innerHTML=abs;
+					var myHilitor = new Hilitor("abstract");
+			myHilitor.apply(Genes);
+		}
+}
+function GotoPMID(){
+    document.location="http://www.ncbi.nlm.nih.gov/pubmed/?term="+pmid;
+}
+function emailpage() {
+var body=date+" "+journal+ "%0D%0A"+"%0D%0A"+title+ "%0D%0A"+"%0D%0A"+authors+ "%0D%0A"+"%0D%0A"+abs+"%0D%0A"+ "%0D%0A"+affiliation+"%0D%0A"+ "%0D%0A"+pmid
+    window.location = "mailto:?body="+body+"&subject="+title;
+}
+
+function OpenTwitter()
+{
+	var type=getMobileOperatingSystem();
+	var tweet="";
+	var title=localStorage.getItem("title");
+	if(title.length>60)
+	{
+		title=title.substring(0, 60);
+	}
+    tweet=tweet+title+". From: "+journal;
+	window.open('twitter://post?message='+tweet+' http://www.ncbi.nlm.nih.gov/pubmed/'+pmid+" %23Pubcast");
+}
+
+function getMobileOperatingSystem() {
+  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+  if( userAgent.match( /iPad/i ) || userAgent.match( /iPhone/i ) || userAgent.match( /iPod/i ) )
+  {
+    return 'iOS';
+
+  } 
+  else if( userAgent.match( /Android/i ) )
+  {
+
+    return 'Android';
+  }
+  else
+  {
+    return 'unknown';
+  }
+}
+</script>
+<head></head>
+<body>
+<div class="super" id="super">
+	<div id="menu" style="position:absolute;width:0%;height:100%;z-index:99999999999999999999999999">
+	  <div id="nav" class="nav">
+			<ul>
+				<li onclick="closeMenu()">Close</li>
+                <li onclick="emailpage()">Email </a></li>
+                <li onclick="OpenTwitter()">Re-tweet</a></li>
+
+			 
+			</ul> 
+		</div>
+	</div>
+	<div id="topdiv" class="top">
+		<div id="seconddiv" class="header">
+			     <a href="./index.html"><img src="img/hivelogodec0213_transparent.png" width="65px" height="36px" class="ui-btn-left header-hivelogo" style="margin-left: 5px;padding-left:2%" /></a>
+			 <h3 style="float:left;width:50%;font-size: 20px;text-align:center">Pubcast</h3>
+			<div id="hamburger" onclick="Menu()">
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+			
+			<!-- header -->
+
+		</div>	       
+	      </div>
+	<br />
+	<form id="form" name="form"> 
+
+<div id= "Wrapper"class="tableWrapper">
+   <a class="twitter-timeline" href="https://twitter.com/HiveU/lists/pubcast" data-widget-id="559795246872420352"  data-chrome="noheader" width="100%" data-chrome="transparent"  data-aria-polite="assertive"></a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+</div>
+	</form>
+</div>
+</body>
+</html>

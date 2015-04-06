@@ -1,0 +1,249 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">	
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/mobile3.css" />
+<script type="text/javascript" src="js/Populate.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.2.js"></script>
+<script type="text/javascript" src="js/hilitor.js"></script>
+
+
+<html>
+
+<script type="text/javascript">
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var $=function(v){return document.getElementById(v);}
+	var Colors={Gene:"#C840F0",Disease:"#FD9B00",Mutation:"#FADCB4",Text:"FFFFF0"};
+    var title=localStorage.getItem("title");
+    var authors=localStorage.getItem("authors");
+    var date=localStorage.getItem("date");
+    var abs=localStorage.getItem("abstract");
+    var pmid=localStorage.getItem("PMID");
+    var affiliation=localStorage.getItem("affiliation");
+    var journal =localStorage.getItem("journal");
+	var Genes =localStorage.getItem("gene");
+	var Diseases =localStorage.getItem("disease");
+	var Mutations =localStorage.getItem("mutation");
+
+	
+	/*var Height=localStorage.getItem("bar");
+	localStorage.removeItem("bar");
+	localStorage.setItem("LastHeight",Height);*/
+	
+
+function Menu(){
+	
+	   if( document.getElementById("nav").style.width>"0%"){closeMenu()}
+	   else{
+		   document.getElementById("nav").style.width="70%";
+		   document.getElementById("menu").style.width="70%";
+		   document.getElementById("nav").style.zIndex="999999999999999999";
+		   document.getElementById("Process").style.position="fixed";
+
+	   }
+
+}
+
+function closeMenu(){
+    document.getElementById("nav").style.width="0%";
+    document.getElementById("menu").style.width="0%";
+    document.getElementById("Process").style.position="absolute";
+
+	
+}
+
+
+
+function CloseOptions(){
+	Cancel_Options();
+    $("Options").style.height="0%";
+    $("Options").style.display="none";
+    $("Process").style.pointerEvents="auto";
+}
+
+function PopulateArticle(){
+
+        
+        $("authors").innerHTML=authors;
+        $("datejournal").innerHTML=date+"  "+journal;
+        $("PMID").innerHTML="PMID "+pmid;
+        $("affiliation").innerHTML=affiliation;
+				
+		var GeneArray = Genes.split(" ");
+		for(var i=0;i<GeneArray.length;i++)
+		{
+			var gene=GeneArray[i];
+			if(gene!="")
+			{
+				var	url="<a style=\"background:"+Colors.Gene+"\"href=\"https://hive.biochemistry.gwu.edu/tools/HiveGenecast/index.php?gene="+gene+"\">"+gene+"</a>";
+				//var	url="<a style=\"color:"+Colors.Text+";background:"+Colors.Gene+"\"href=\"https://hive.biochemistry.gwu.edu/tools/HiveGenecast/index.php?gene="+gene+"\">"+gene+"</a>";
+				var re = new RegExp(gene,"g");
+				
+					abs=abs.replace(re, url);
+					title=title.replace(re, url);
+				
+
+			}
+		}
+		var NonredDis= new Array();
+		if(Diseases!=null)
+		{	
+			var DiseaseArray = Diseases.split(",");
+			for(var i=0;i<DiseaseArray.length;i++)
+			{
+				var disease=DiseaseArray[i];
+				if(disease!=""&&NonredDis.indexOf(disease)==-1)
+				{
+					var	url="<a style=\"background:"+Colors.Disease+"\">"+disease+"</a>";
+					var re = new RegExp(disease,"g");
+					abs=abs.replace(re, url);
+					title=title.replace(re, url);
+					NonredDis.push(disease);
+
+				}
+			}
+		}
+		
+		if(Mutations!=null)
+		{	
+			var MutationArray = Mutations.split(",");
+			for(var i=0;i<MutationArray.length;i++)
+			{
+				var mutation=MutationArray[i];
+				if(mutation!="")
+				{
+					var	url="<a style=\"background:"+Colors.Mutation+"\">"+mutation+"</a>";
+					var re = new RegExp(mutation,"g");
+					abs=abs.replace(re, url);
+					title=title.replace(re, url);
+
+				}
+			}
+		}
+		$("title").innerHTML=title;
+		$("abstract").innerHTML=abs;
+}
+function GotoPMID(){
+    document.location="http://www.ncbi.nlm.nih.gov/pubmed/?term="+pmid;
+}
+function emailpage() {
+ var Title=localStorage.getItem("title");
+    var Abstract=localStorage.getItem("abstract");
+    
+	
+var body=date+" "+journal+ "%0D%0A"+"%0D%0A"+Title+ "%0D%0A"+"%0D%0A"+authors+ "%0D%0A"+"%0D%0A"+Abstract+"%0D%0A"+ "%0D%0A"+affiliation+"%0D%0A"+ "%0D%0A"+pmid
+    window.location = "mailto:?body="+body+"&subject="+Title;
+}
+
+function OpenTwitter()
+{
+	var type=getMobileOperatingSystem();
+	console.log(type);
+	var tweet="";
+	var title=localStorage.getItem("title");
+	if(title.length>60)
+	{
+		title=title.substring(0, 60);
+	}
+    tweet=tweet+"Check out this latest article!"+title+". From: "+journal;
+	if(type=='iOS')
+	{
+		setTimeout(function () { window.location = "https://itunes.apple.com/ca/app/twitter/id333903271?mt=8"; }, 3);
+		window.open('twitter://post?message='+tweet+' http://www.ncbi.nlm.nih.gov/pubmed/'+pmid+" %23Pubcast");
+	}
+	else if(type=='Android')
+	{
+		//setTimeout(function () { window.location = "https://play.google.com/store/apps/details?id=com.twitter.android"; }, 3);
+		window.open('twitter://post?message='+tweet+' http://www.ncbi.nlm.nih.gov/pubmed/'+pmid+" %23Pubcast");
+	}
+	else
+	{
+		document.getElementById("twitter").innerHTML="<a class=\"twitter-share-button\"href=\"https://twitter.com/share\">Tweet</a>";
+		window.twttr=(function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);t._e=[];t.ready=function(f){t._e.push(f);};return t;}(document,"script","twitter-wjs"));
+	}
+	
+
+	
+}
+
+function getMobileOperatingSystem() {
+  var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+  if( userAgent.match( /iPad/i ) || userAgent.match( /iPhone/i ) || userAgent.match( /iPod/i ) )
+  {
+    return 'iOS';
+
+  } 
+  else if( userAgent.match( /Android/i ) )
+  {
+
+    return 'Android';
+  }
+  else
+  {
+    return 'unknown';
+  }
+}
+</script>
+<head></head>
+<body onload="PopulateArticle()">
+<div class="super" id="super">
+	<div id="menu" style="position:absolute;width:0%;height:100%;z-index:99999999999999999999999999">
+	  <div id="nav" class="nav">
+			<ul>
+				<li onclick="closeMenu()">Close</li>
+                <li onclick="emailpage()">Email Article</a></li>
+                <li onclick="OpenTwitter()">Tweet Article</a></li>
+                <li><a href="./Contact.html"> Contact</a></li>
+				<li><a href="./About.html"> About</a></li>
+
+
+			 
+			</ul> 
+		</div>
+	</div>
+	<div id="topdiv" class="top">
+		<div id="seconddiv" class="header">
+			     <a href="./index.html"><img src="img/hivelogodec0213_transparent.png" width="65px" height="36px" class="ui-btn-left header-hivelogo" style="margin-left: 5px;padding-left:2%" /></a>
+			 <h3 style="float:left;width:50%;font-size: 20px;text-align:center">Pubcast</h3>
+			<div id="hamburger" onclick="Menu()">
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+			
+			<!-- header -->
+
+		</div>	       
+	      </div>
+	<br />
+	<form id="form" name="form"> 
+
+<div id= "Wrapper"class="tableWrapper" style="margin-right:5%;margin-left:5%">
+    <div id="Process" style="width: 100%; overflow-x:hidden" name="Article">
+                <div id="article" class="divtable">
+                    <div id ="item" class="processinner">
+                        <div id ="datejournal"class="datejournal" style="margin-top:2%"></div>
+                        <div id ="title"class="articletitle"style="text-align:center;margin-top:5%"></div>
+                        <div id ="authors" class="datejournal" style="text-align:center"></div>
+                    </div>
+						<div id= "keys" style="margin-top:1%;font-size:13px">
+						<div id="key" class= "Title" style="width:25%;display:inline;margin-left:22%;background:#C840F0;color:black;padding-left:2%;padding-right:2%">Genes</div>
+						<div id="key" class= "Title" style="width:25%;display:inline;background:#FADCB4;color:black;padding-left:2%;padding-right:2%">Mutations</div>
+						<div id="key" class= "Title" style="width:25%;display:inline;background:#FD9B00;color:black;padding-left:2%;padding-right:2%">Diseases</div>
+					</div>
+
+                        <div id ="abstract" class="abs"></div>
+                        <div id ="affiliation" class="abs"></div>
+                        <div id ="PMID" class="PMID" onclick="GotoPMID()"></div>
+						<div class="processinner" style="width:100% padding-b"></div>
+					  <img src="img/blacktwitter.jpg" id="twitter" class="share" onclick="OpenTwitter()"></img>
+					   <img src="img/ic_email_24px.svg" id="email" class="share" onclick="emailpage()"></img>
+                </div>
+
+    </div>
+</div>
+	</form>
+</div>
+</body>
+</html>
