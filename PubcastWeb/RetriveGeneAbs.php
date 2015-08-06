@@ -1,14 +1,13 @@
 <?php
 
-$servername = "localhost";
+ $servername = "localhost";
  $username = "webcast";
  $password = "Caster53";
  $dbname = "webcasts";
  $conn = new mysqli($servername, $username, $password,$dbname);
- $query="";
-
+$Tab=$_GET["Tab"];
  //executing SQL statement 
-$query="SELECT PMID,Title,PubDate,Abstract,Authors,Affiliation,Journal,partAbs,Gene,Disease,Mutation FROM Pubcast ORDER BY Date DESC;";
+$query="SELECT PMID,Title,PubDate,Abstract,Authors,Affiliation,Journal,partAbs,Gene,Disease,Mutation,Weight,Tab_name FROM Pubcast Where Tab_name='$Tab' ORDER BY Weight DESC;";
 $result = $conn->query($query);
 
 $array=array();
