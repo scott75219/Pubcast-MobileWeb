@@ -17,8 +17,8 @@
 	var load;
     var querey=1000;
 	var inc=1;
-    var genomics= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Genomics)+NOT+Proteomics+AND%20hasabstract/&reldate=10&datetype=edat&retmax="+querey+"&usehistory=y";
-    var proteomics= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Proteomics)+NOT+Genomics+AND%20hasabstract/&reldate=10&datetype=edat&retmax="+querey+"&usehistory=y";	
+    var genomics= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Genomics)+NOT+Proteomics+AND%10hasabstract/&reldate=10&datetype=edat&retmax="+querey+"&usehistory=y";
+    var proteomics= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Proteomics)+NOT+Genomics+AND%10hasabstract/&reldate=10&datetype=edat&retmax="+querey+"&usehistory=y";	
     var w = window.innerWidth;
     var h = window.innerHeight;
     var url = "" + document.location;
@@ -51,7 +51,7 @@ function View(){
 
 
 function Proteomics() {
-    inc=2;
+    inc=1;
 	sessionStorage.removeItem("Tab");
 	sessionStorage.setItem("Tab","Proteomics");
     document.getElementById("SecondLabel").className="clicked";
@@ -62,65 +62,80 @@ function Proteomics() {
     document.getElementById("super").appendChild(load);
 
 	setTimeout(function(){
-
 		if(localStorage.getItem("Proteomics")==null)
 		{		
-			Parse(proteomics,"Proteomics");
+		 jQuery.ajax({ 
+					url:'RetriveGeneAbs.php',
+					 type:'GET',	
+					 data:{Tab:"Proteomics"},
+					success: function(response){
+						  var Articles = JSON.parse(response);
+						  	localStorage.setItem("Proteomics", JSON.stringify(Articles));
+						  drawList(Articles,10);
+					},
+					error: function (response, status, err) {
+						console.log("Failure!");
+						console.log(response.responseText);
+					}
+				});
 		}
 		else
 		{
 			var obj=localStorage.getItem("Proteomics");
 			obj =JSON.parse(obj);
-			drawList(obj,20);
+			drawList(obj,10);
+		}
+	},100);
 		document.getElementById("super").removeChild(load);
-
-		}    
-			//document.getElementById("super").removeChild(load);
-		},100);
-        window.onscroll = function(ev) {
-            ScrollEvent("Proteomics","SecondLabel");
-
-		};
+		document.getElementById("Load More").style.visibility = "visible";
+		scroll(0,0);
+			
 }
 
 function Genomics() {
-    inc=2;
+    inc=1;
 	sessionStorage.removeItem("Tab");
 	sessionStorage.setItem("Tab","Genomics");
-	
 	document.getElementById("FirstLabel").className="clicked";
 	document.getElementById("ThirdLabel").className= "notclicked";
 	document.getElementById("SecondLabel").className= "notclicked";
 	document.getElementById("FourthLabel").className= "notclicked";
 	document.getElementById("FifthLabel").className= "notclicked";
-
 	document.getElementById("super").appendChild(load);
-    setTimeout(function(){
-
-		if(localStorage.getItem("Genomics")==null)	        
-			Parse(genomics,"Genomics");
-		
+   setTimeout(function(){
+		if(localStorage.getItem("Genomics")==null)
+		{		
+		 jQuery.ajax({ 
+					url:'RetriveGeneAbs.php',
+					 type:'GET',	
+					 data:{Tab:"Genomics"},
+					success: function(response){
+						  var Articles = JSON.parse(response);
+						  	localStorage.setItem("Genomics", JSON.stringify(Articles));
+						  drawList(Articles,10);
+					},
+					error: function (response, status, err) {
+						console.log("Failure!");
+						console.log(response.responseText);
+					}
+				});
+		}
 		else
 		{
 			var obj=localStorage.getItem("Genomics");
 			obj =JSON.parse(obj);
-			drawList(obj,20);
-			document.getElementById("super").removeChild(load);
-		}    
+			drawList(obj,10);
+		}
 	},100);
 	
-	var Height=localStorage.getItem("LastHeight");
-	/*if(Height!=null)
-	{
-		console.log("Height:"+Height);
-		window.scrollTo(0,localStorage.getItem("LastHeight"));
-	window.scrollTo(0,localStorage.getItem("LastHeight"));
-	}*/
-        
-        window.onscroll = function(ev) {
-		   localStorage.setItem("bar",document.body.scrollTop);
-           ScrollEvent("Genomics","FirstLabel");
-		};
+	document.getElementById("super").removeChild(load);
+	document.getElementById("Load More").style.visibility = "visible";
+    scroll(0,0);
+	//document.getElementById("Load More").style.visibility = "visible";
+	
+       // document.getElementById("Load More").onclick = function() {
+     //      ScrollEvent("Genomics","FirstLabel");
+	//	};
 }
 
 function ScrollEvent(Tab,Label){
@@ -130,12 +145,29 @@ function ScrollEvent(Tab,Label){
 				obj =JSON.parse(obj);
                 if (inc<=3)
                 {
-                    drawList(obj,inc*20); 
+                    drawList(obj,inc*10); 
                     inc++;
                 }
 			}
 }
+
+function LoadMoreEvent(){
+			    var Tab=sessionStorage.getItem("Tab");
+                var obj=localStorage.getItem(Tab);
+				obj =JSON.parse(obj);
+				inc++;
+                if (inc<=3)
+                {
+                    drawList(obj,inc*10); 
+                }
+				if (inc>=3)
+				{
+					document.getElementById("Load More").style.visibility = "hidden";
+				}
+
+}
 function Opinion() {
+	document.getElementById("Load More").style.visibility = "hidden";
 	sessionStorage.removeItem("Tab");
 	sessionStorage.setItem("Tab","Opinion");
      document.getElementById("ThirdLabel").className="clicked";
@@ -145,46 +177,45 @@ function Opinion() {
 
 	 document.getElementById("super").appendChild(load);
 	 document.getElementById("FourthLabel").className= "notclicked";
-//	 window.location.href = "https://hive.biochemistry.gwu.edu/usr/scott/tools/HivePubcast/PubcastTweet.html"
 
 			setTimeout(function(){
 				document.getElementById("Process").innerHTML="<div class=\"twitter-timeline\" href=\"https://twitter.com/HiveU/lists/pubcast\" data-widget-id=\"559795246872420352\"  data-chrome=\"noheader\" width=\"100%\"></div>";
-				//!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+
 				!function(d,s,id)
 				{
 					var js,fjs=d.getElementsByTagName(s)[0];
-					//if(!d.getElementById(id))
-					//{
+
 						js=d.createElement(s);
 						js.id=id;js.async=true;
 						js.src="//platform.twitter.com/widgets.js";
 						fjs.parentNode.insertBefore(js,fjs);
-					//}
+
 				}(document,"script","twitter-wjs");
 			},100);
 			document.getElementById("super").removeChild(load);
 
 }
 function Genes() {
-	inc=2;
+	inc=1;
 	sessionStorage.removeItem("Tab");
 	sessionStorage.setItem("Tab","Genes");
-     document.getElementById("ThirdLabel").className="notclicked";
-	 document.getElementById("SecondLabel").className= "notclicked";
-     document.getElementById("FirstLabel").className= "notclicked";
-	 document.getElementById("FourthLabel").className= "notclicked";
-	 document.getElementById("FifthLabel").className= "clicked";
-	 document.getElementById("super").appendChild(load);
+    document.getElementById("ThirdLabel").className="notclicked";
+	document.getElementById("SecondLabel").className= "notclicked";
+    document.getElementById("FirstLabel").className= "notclicked";
+	document.getElementById("FourthLabel").className= "notclicked";
+	document.getElementById("FifthLabel").className= "clicked";
+	document.getElementById("super").appendChild(load);
     setTimeout(function(){
 		if(localStorage.getItem("Genes")==null)
 		{		
 		 jQuery.ajax({ 
 					url:'RetriveGeneAbs.php',
-					// type:'POST',				
+					 type:'GET',	
+					 data:{Tab:"Genes"},
 					success: function(response){
-						  var geneStuff = JSON.parse(response);
-						  	localStorage.setItem("Genes", JSON.stringify(geneStuff));
-						  drawList(geneStuff,20);
+						  var Articles = JSON.parse(response);
+						  	localStorage.setItem("Genes", JSON.stringify(Articles));
+						  drawList(Articles,10);
 					},
 					error: function (response, status, err) {
 						console.log("Failure!");
@@ -196,18 +227,19 @@ function Genes() {
 		{
 			var obj=localStorage.getItem("Genes");
 			obj =JSON.parse(obj);
-			drawList(obj,20);
+			drawList(obj,10);
 		}
 	},100);
 		document.getElementById("super").removeChild(load);
-		
-		window.onscroll = function(ev) {
-           ScrollEvent("Genes","FifthLabel");
-		};
+		document.getElementById("Load More").style.visibility = "visible";
+		scroll(0,0);
+	//	window.onscroll = function(ev) {
+     //      ScrollEvent("Genes","FifthLabel");
+	//	};
 }
 
 function Custom(){
-	var inc=2;
+	var inc=1;
 	sessionStorage.removeItem("Tab");
 	sessionStorage.setItem("Tab","Custom");
      document.getElementById("ThirdLabel").className="notclicked";
@@ -215,48 +247,53 @@ function Custom(){
      document.getElementById("FirstLabel").className= "notclicked";
 	 document.getElementById("FifthLabel").className= "notclicked";
 	 document.getElementById("FourthLabel").className= "clicked";
-	 if(localStorage.getItem("Custom_Query")!=null){
+	 if(localStorage.getItem("Custom_Query")!=null)
+	 {
 	 	 	var query=localStorage.getItem("Custom_Query");
 		    document.getElementById("super").appendChild(load);
-		    setTimeout(function(){
+		    setTimeout(function()
+			{
 
-		if(localStorage.getItem("Custom")==null)	
-		//$("erorr").style.display="none"; 	
-		Parse(query,"Custom");
-		else
-		{
-			var obj=localStorage.getItem("Custom");
-			obj =JSON.parse(obj);
-			drawList(obj,20);
-			document.getElementById("super").removeChild(load);
-		}    
-	},100);
-         
-        window.onscroll = function(ev) {
-            ScrollEvent("Custom","FourthLabel");
+				if(localStorage.getItem("Custom")==null)	
+				Parse(query,"Custom");
+				else
+				{
+					var obj=localStorage.getItem("Custom");
+					obj =JSON.parse(obj);
+					drawList(obj,10);
+				}    
+			},100);
+		 document.getElementById("super").removeChild(load);
+         scroll(0,0);
+		 document.getElementById("Load More").style.visibility = "visible";		 
+       // window.onscroll = function(ev) {
+      // ScrollEvent("Custom","FourthLabel");
+		// 
 
-		};
+	//	};
 	}
-	else if(localStorage.getItem("Custom")==null)
+
+	else if(localStorage.getItem("Custom_Query")==null)
 	{
+		document.getElementById("Load More").style.visibility = "hidden";		 
 		$("Process").innerHTML="<div id=\"text\" class=\"abs\" style=\"margin-top:20%\">Enter a query for your custom feed<br /><br />Example: (breast cancer[MeSH Terms]) AND \"PloS one\"[Journal]</div>"+
 		"<a  class=\"PMID\" href=\"http://www.youtube.com/watch?v=dncRQ1cobdc&feature=relmfu\">PubMed Advanced Search Builder</a>"+
-		"<textarea id =\"quereyfeed\"cols=\"30\" rows=\"5\" style=\"width:90%;margin-top:5%\"value=\"\">"+
-		"</textarea><br /><br /><div onclick=\"setCustom()\" class=\"notclicked\" style=\"border: 1px solid black;text-align:center;width:25%;margin-left:35%\">Submit</div>"+
+		"<textarea id =\"quereyfeed\"cols=\"30\" rows=\"5\" style=\"width:100%;margin-top:5%\"value=\"\">"+
+		"</textarea><br /><br /><button onclick=\"setCustom()\" type=\"submit\">Submit</div>"+
 		"<div id= \"error\" style=\"color:red;text-align-center;text-size 11px;display:none\">Query did not have any results please try again</div>";
-			document.getElementById("super").removeChild(load);
-
+		document.getElementById("super").removeChild(load);
 	}
+
 } 
 
 function GoTo(){
 	var Tab=sessionStorage.getItem("Tab");
-	if(Tab==null||Tab=="Genes")
-		Genes();
+	if(Tab==null||Tab=="Genomics")
+		Genomics();
 	else if(Tab=="Proteomics")
 		Proteomics();
-	else if(Tab=="Genomics")
-		Genomics();
+	else if(Tab=="Genes")
+		Genes();
 	else if(Tab=="Opinion")
 		Opinion();	
 	else if(Tab=="Custom")
@@ -295,9 +332,7 @@ function setCustom(){
 			localStorage.setItem("Custom_Query",querey);
 			document.getElementById("error").style.display="none";
 			Custom();
-			 if(localStorage.getItem("Custom")==null){
-		// localStorage.removeItem("Custom_Query");
-		 }
+		 
 }
 
 function DeleteArticle(){
@@ -379,17 +414,18 @@ function ReturnHome(){
 			<!-- header -->
 
 		</div>
+		
+		<div id="First" class="tabs" onclick="Genomics()">
+			<input id="first" type="radio" name="Left" /> <label for="First" id="FirstLabel">Genomics</label>
+			<div id="tab1" class="rectangle"></div>
+		</div>
+		
 		<div id="Fifth" class="tabs" onclick="Genes()">
 			<input id="fifth" type="radio" name="FarLeft" /> <label for="Fifth" id="FifthLabel">Genes</label>
 			<div id="tab5" class="rectangle" style="visibility: hidden">
 			</div>
 		</div>
 		
-		<div id="First" class="tabs" onclick="Genomics()">
-			<input id="first" type="radio" name="Left" /> <label for="First" id="FirstLabel">Genomics</label>
-			<div id="tab1" class="rectangle"></div>
-		</div>
-
 		<div id="Second" class="tabs" onclick="Proteomics()">
 			<input id="second" type="radio" name="Middle"/> <label for="Second" id="SecondLabel">Proteomics</label>
 			<div id="tab2" class="rectangle" style="visibility: hidden">
@@ -424,13 +460,17 @@ function ReturnHome(){
 	<form id="form" name="form"> 
 		<div id= "Wrapper"class="tableWrapper" >
 			<div id="Process" style="width: 100%; overflow-x:hidden" name="Process" >
-			<script type="text/javascript">
-				View();
-			</script>
+			
 			</div>
 		</div>
 	</form>
-</div>
+	<div style="padding-bottom:10%">	
+		<button id ="Load More" type="submit"  onclick="LoadMoreEvent()"style="visibility:hidden; width:90%; margin-left: 5%; margin-right: 5%;">Load More</button>
+			<script type="text/javascript">
+				View();
+			</script>
+	</div>	
+	</div>
 </div>
 </body>
 </html>
