@@ -1,233 +1,252 @@
 <?php
- 
+ $Action = $argv[1];
+ $Tab = $argv[2];
+
  $servername = "localhost";
  $username = "webcast";
  $password = "Caster53";
  $dbname = "webcasts";
- $conn = new mysqli($servername, $username, $password,$dbname);
  $query="";
- $query="Delete FROM Pubcast";
- if ($conn->query($query) === TRUE) 
-				{
-					echo "Table Deleted successfully\n";
-				}
- $conn->close();
-  $conn = new mysqli($servername, $username, $password,$dbname);
- 
- //Getting Genes from database
- $connGene = new mysqli($servername, $username, $password,$dbname);
- $queryGene="SELECT Gene FROM Genes";
- $GeneResults=$connGene->query($queryGene);
- $connGene->close();
- $Genes = array();
  $QueryArray=array();
-  while($row = $GeneResults->fetch_assoc())
-	{
-		if ($row["Gene"]!=="")
-		$Genes[]=$row["Gene"]. " OR ";
+ $Genes = array();
+ $Abbr = array("Nature"=>41.5, 
+ "Science"=>31.4, 
+ "Nucleic Acids Res."=>8.8, 
+ "Database"=>1,
+ "Nat Commun"=>11.47,
+ "Sci Rep"=>5.57,
+ "Elife"=>9.32,
+ "N. Engl. J. Med."=>1,
+ "Nat. Med."=>27.4,
+ "Proc. Natl. Acad. Sci. U.S.A"=>9.674,
+ "Cells"=>1,
+ "Nat. Genet."=>29.35,
+ "Lancet"=>45.2,
+ "PLoS Med."=>14.42, 
+ "Blood"=>9.775,
+ "Trends Genet."=>11.57);
+ echo $Action."\n";
+ echo $Tab."\n";
+ 
 
-	}
-	
-$x=0;
-$y=0;
-$last=end($Genes);
-$Pubquery="";
- while ($x<count($Genes))
-	{
-		$Pubquery.=$Genes[$x];
-		if($y === 500) 
-		{
-			array_push($QueryArray, $Pubquery);
-			$Pubquery="";
-			$y=0;
-		}
-		else if($Genes[$x]===$last)
-		{
-			array_push($QueryArray, $Pubquery);
-			$Pubquery="";
 
-		}		
-		$x++;
-		$y++;
-		
-	}
-for ($z=0;$z<count($QueryArray);$z++)
-{
-	echo "In iteration: $z\n";
-	 $Pubquery = $QueryArray[$z];
-	 $Pubquery = substr($Pubquery, 0, -4);
-	 $url="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(".$Pubquery."[Title/Abstract]) AND cancer mutation AND hasabstract/&reldate=20&datetype=edat&retmax=1000";
-	 $dom = new DOMDocument();
-	 $dom->load($url);
-	 $idList = array();
-	 $ids = $dom->getElementsByTagName("Id");
-	 
-	 //storing each id in to an array
-	foreach ($ids as $id)
+ function MakeGeneQuery()
+ {
+	 global $servername,$username,$password,$dbname,$QueryArray,$Genes;
+	 $connGene = new mysqli($servername, $username, $password,$dbname);
+	 $queryGene="SELECT Gene FROM Genes";
+	 $GeneResults=$connGene->query($queryGene);
+	 $connGene->close();
+	  while($row = $GeneResults->fetch_assoc())
 		{
-			$idList[]= $id->nodeValue."\n";
+			if ($row["Gene"]!=="")
+			$Genes[]=$row["Gene"]. " OR ";
+
 		}
 		
-	//looping through each ID to get info
-	$amnt=count($idList);
-	for ($i=0;$i<$amnt;$i++)
+	$x=0;
+	$y=0;
+	$last=end($Genes);
+	$Pubquery="";
+	 while ($x<count($Genes))
 		{
-		   $Title="";
-		   $PubDate="";
-		   $Affiliation=" ";
-		   $Abstract="";
-		   $Authors="";
-		   $PMID="";
-		   $Gene="";
-		   $partAbs="";
-		   $Journal="";
-		   $TimeStamp="";
-		   
-			$id=$idList[$i];
-			$url= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=".$id."&retmode=xml";
-			$dom = new DOMDocument();
-			$dom->load($url);
+			$Pubquery.=$Genes[$x];
+			if($y === 500) 
+			{
+				array_push($QueryArray, $Pubquery);
+				$Pubquery="";
+				$y=0;
+			}
+			else if($Genes[$x]===$last)
+			{
+				array_push($QueryArray, $Pubquery);
+				$Pubquery="";
 
-			//Title
-			if ($dom->getElementsByTagName("ArticleTitle")->length>0)
+			}		
+			$x++;
+			$y++;
+			
+		}
+
+ }
+
+function GetContents($GetGenes,$url)
+{ 
+		 global $servername,$username,$password,$dbname,$QueryArray,$Abbr,$Tab,$Genes;
+		 $dom = new DOMDocument();
+		 $dom->load($url);
+		 $idList = array();
+		 $ids = $dom->getElementsByTagName("Id");
+		 
+		 //storing each id in to an array
+		foreach ($ids as $id)
 			{
-				$Titletemp=$dom->getElementsByTagName("ArticleTitle")->item(0)->nodeValue;
-				if (strlen($Titletemp)>0){
-					$Title=$Titletemp;
-					$ser=serialize($Title);    # safe -- won't count the slash 
-					$Title=addslashes($ser);
-					
-				}
+				$idList[]= $id->nodeValue."\n";
 			}
-		   
-		   //Abstract
-			$AbstractParts=$dom->getElementsByTagName("AbstractText");
-			if ($AbstractParts!=null){
-				foreach ($AbstractParts as $Part)
+			
+		//looping through each ID to get info
+		$amnt=count($idList);
+		for ($i=0;$i<$amnt;$i++)
+			{
+			   $Title="";
+			   $PubDate="";
+			   $Affiliation=" ";
+			   $Abstract="";
+			   $Authors="";
+			   $PMID="";
+			   $Gene="";
+			   $partAbs="";
+			   $Journal="";
+			   $TimeStamp="";
+			   $Weight=0;
+				$id=$idList[$i];
+				$url= "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=".$id."&retmode=xml";
+				$dom = new DOMDocument();
+				$dom->load($url);
+
+				//Title
+				if ($dom->getElementsByTagName("ArticleTitle")->length>0)
 				{
-					$Abstract.=" ".$Part->nodeValue;
+					$Titletemp=$dom->getElementsByTagName("ArticleTitle")->item(0)->nodeValue;
+					if (strlen($Titletemp)>0){
+						$Title=$Titletemp;
+						$ser=serialize($Title);    # safe -- won't count the slash 
+						$Title=addslashes($ser);
+						
+					}
 				}
-			}			
-				//partAbs
-			$partAbs =substr($Abstract,0,120);
-			$ser=serialize($partAbs);    # safe -- won't count the slash 
-			$partAbs=addslashes($ser); 
-			$ser=serialize($Abstract);    # safe -- won't count the slash 
-			$Abstract=addslashes($ser); 
-			
-			//Date
-			 $Year="";
-			 $Month="";
-			 $Day="";
-			 $History=$dom->getElementsByTagName("PubMedPubDate");
-			 $Dates=$History->item($History->length-1)->nodeValue;
-			 $arr = explode("\n", $Dates);
-			if(count($arr)>0)
-			{
-				$Year= ltrim($arr[1],' ');
-				$Month= ltrim($arr[2],' ');
-				$Day= ltrim($arr[3],' ');
-				
-				$PubDate=$Month."/".$Day."/".$Year;
-			//	$PubDate = preg_replace('/\s+/', ' ', $PubDate);
-			}
-				date_default_timezone_set('America/New_York');
-				$date = date("Y-m-d",strtotime(str_replace('/','-',$Day."-".$Month."-".$Year)));
-			
-			//PMID
-			$PMIDtemp=$dom->getElementsByTagName("PMID")->item(0)->nodeValue;
-			 if (strlen($PMIDtemp)>0)
-			 {
-				$PMID=$PMIDtemp;
-		   }
-		   
-		   //First Author Affiliation
-			if ($dom->getElementsByTagName("Affiliation")->length>0)
-			{
-				$Affiltemp=$dom->getElementsByTagName("Affiliation")->item(0)->nodeValue;
-				if (strlen($Affiltemp)>0)
-				{
-					
-				}
-				$Affiliation=$Affiltemp;
-				//	$ser=serialize($Affiliation);    # safe -- won't count the slash 
-					$Affiliation=addslashes($Affiliation); 
-			}
-			//Journal	
-			if ($dom->getElementsByTagName("ISOAbbreviation")->length>0)
-			{
-				$Journaltemp=$dom->getElementsByTagName("ISOAbbreviation")->item(0)->nodeValue;
-				if (strlen($Journaltemp)>0)
-				{
-					$Journal=$Journaltemp;
-				}
-			}
-			
-		
-			
-			//AuthorList
-			if ($dom->getElementsByTagName("AuthorList")->length>0)
-			{
-					$AuthorList=$dom->getElementsByTagName("Author");
-					for ($l=0;$l<$AuthorList->length;$l++)
+			   
+			   //Abstract
+				$AbstractParts=$dom->getElementsByTagName("AbstractText");
+				if ($AbstractParts!=null){
+					foreach ($AbstractParts as $Part)
 					{
-						$LastName="";
-						$ForeName="";
-						$Initials="";
+						$Abstract.=" ".$Part->nodeValue;
+					}
+				}			
+					//partAbs
+				$partAbs =substr($Abstract,0,120);
+				$ser=serialize($partAbs);    # safe -- won't count the slash 
+				$partAbs=addslashes($ser); 
+				$ser=serialize($Abstract);    # safe -- won't count the slash 
+				$Abstract=addslashes($ser); 
+				
+				//Date
+				 $Year="";
+				 $Month="";
+				 $Day="";
+				 $History=$dom->getElementsByTagName("PubMedPubDate");
+				 $Dates=$History->item($History->length-1)->nodeValue;
+				 $arr = explode("\n", $Dates);
+				if(count($arr)>0)
+				{
+					$Year= ltrim($arr[1],' ');
+					$Month= ltrim($arr[2],' ');
+					$Day= ltrim($arr[3],' ');
+					
+					$PubDate=$Month."/".$Day."/".$Year;
+				//	$PubDate = preg_replace('/\s+/', ' ', $PubDate);
+				}
+					date_default_timezone_set('America/New_York');
+					$date = date("Y-m-d",strtotime(str_replace('/','-',$Day."-".$Month."-".$Year)));
+				
+				//PMID
+				$PMIDtemp=$dom->getElementsByTagName("PMID")->item(0)->nodeValue;
+				 if (strlen($PMIDtemp)>0)
+				 {
+					$PMID=$PMIDtemp;
+			   }
+			   
+			   //First Author Affiliation
+				if ($dom->getElementsByTagName("Affiliation")->length>0)
+				{
+					$Affiltemp=$dom->getElementsByTagName("Affiliation")->item(0)->nodeValue;
+					if (strlen($Affiltemp)>0)
+					{
 						
-						$Length=$AuthorList->item($l)->nodeValue;
-						$arr = explode("\n", $Length);
-						if(hasChild($AuthorList->item($l))&&$arr>=5){
-							$LastName=$AuthorList->item($l)->childNodes->item(1)->nodeValue;
-							$Initials=$AuthorList->item($l)->childNodes->item(5)->nodeValue;
-							$Authors=$Authors." ".$LastName." ".$Initials.",";
-						
+					}
+					$Affiliation=$Affiltemp;
+					//	$ser=serialize($Affiliation);    # safe -- won't count the slash 
+						$Affiliation=addslashes($Affiliation); 
+				}
+				//Journal	
+				if ($dom->getElementsByTagName("ISOAbbreviation")->length>0)
+				{
+					$Journaltemp=$dom->getElementsByTagName("ISOAbbreviation")->item(0)->nodeValue;
+					if (strlen($Journaltemp)>0)
+					{
+						$Journal=$Journaltemp;
+						if (in_array($Journal, $Abbr)) 
+						{
+							$Weight=$Abbr[$Journal];
 						}
 					}
-					$Authors = rtrim($Authors, ",");
-					$ser=serialize($Authors);    # safe -- won't count the slash 
-					$Authors=addslashes($ser); 
-						
-			}
-		$Gene=FindGene($Abstract,$Genes);
-		 //  echo $Gene;
-		 // $Gene="TEST";
-		 //  $ser=serialize($Gene);    # safe -- won't count the slash 
-		 //  $Gene=addslashes($ser); 
-		//  echo "$PMID ".$Gene."\n";
-		$Today=date("Y-m-d");
-		$query="INSERT INTO Pubcast (PMID,Title,PubDate,Abstract,Authors,Affiliation,Journal,partAbs,Gene,Date) VALUES ('$PMID','$Title','$PubDate','$Abstract','$Authors','$Affiliation','$Journal','$partAbs','$Gene','$date')";
-		$Gene = str_replace(' ', '', $Gene);
-		if($Gene!=""&&$date<=$Today)
-		{
-			if ($conn->connect_error) 
-			{
-				die("Connection failed: " . $conn->connect_error);
-			}
-			if ($conn->query($query) === TRUE) 
-					{
-				//		echo "New record created successfully\n";
-					}
-			else 
-					{
-						echo "Error: " . $conn->error."PMID: $PMID\n";
-						
-					}
-			$conn->close();
-		   $conn = new mysqli($servername, $username, $password,$dbname);
-			FindMD($PMID,$conn);
+				}
+				
 			
-		}
-		$conn->close();
-		$conn = new mysqli($servername, $username, $password,$dbname);
-
-		}
-	$conn->close();
-	echo "Sleeping\n";
-	sleep(60);
-	$conn = new mysqli($servername, $username, $password,$dbname);
+				
+				//AuthorList
+				if ($dom->getElementsByTagName("AuthorList")->length>0)
+				{
+						$AuthorList=$dom->getElementsByTagName("Author");
+						for ($l=0;$l<$AuthorList->length;$l++)
+						{
+							$LastName="";
+							$ForeName="";
+							$Initials="";
+							
+							$Length=$AuthorList->item($l)->nodeValue;
+							$arr = explode("\n", $Length);
+							if(hasChild($AuthorList->item($l))&&$arr>=5){
+								$LastName=$AuthorList->item($l)->childNodes->item(1)->nodeValue;
+								$Initials=$AuthorList->item($l)->childNodes->item(5)->nodeValue;
+								$Authors=$Authors." ".$LastName." ".$Initials.",";
+							
+							}
+						}
+						$Authors = rtrim($Authors, ",");
+						$ser=serialize($Authors);    # safe -- won't count the slash 
+						$Authors=addslashes($ser); 
+							
+				}
+			
+			$Today=date("Y-m-d");
+			if($GetGenes==="Yes")
+			{
+				$Gene=FindGene($Abstract,$Genes);
+				$Gene = str_replace(' ', '', $Gene);
+			}
+			else
+			{
+				$Gene="NONE";
+			}
+			if($Gene!=""&&$date<=$Today)
+			{
+				$query="INSERT INTO Pubcast (PMID,Title,PubDate,Abstract,Authors,Affiliation,Journal,partAbs,Gene,Date,Weight,Tab_name) VALUES ('$PMID','$Title','$PubDate','$Abstract','$Authors','$Affiliation','$Journal','$partAbs','$Gene','$date','$Weight','$Tab')";
+				$conn = new mysqli($servername, $username, $password,$dbname);
+				if ($conn->connect_error) 
+				{
+					die("Connection failed: " . $conn->connect_error);
+				}
+				if ($conn->query($query) === TRUE) 
+						{
+							//echo "New record created successfully\n";
+						}
+				else 
+				{
+						echo "Error: " . $conn->error."PMID: $PMID\n";
+								
+				}
+				$conn->close();	
+				if($GetGenes=="Yes")
+				{
+					$conn = new mysqli($servername, $username, $password,$dbname);
+					FindMD($PMID,$conn);
+					$conn->close();
+				}
+			}
+	}	
 }
-
 function FindGene($Abs,$Genes) {
     $G="";
 	$Dec=stripslashes($Abs);
@@ -312,12 +331,77 @@ function FindMD($ID,$connection)
 	}
 	if ($connection->query($query) === TRUE) 
 	{
-		//echo "New record created successfully\n";
+		echo "New record created successfully\n";
 	}
 	else 
 	{
 		echo "Error: " . $connection->error."$query\n";				
 	}
+}
+function GetGenes()
+{
+	global $QueryArray;
+	MakeGeneQuery();
+	for ($z=0;$z<count($QueryArray);$z++)
+	{
+		echo "In iteration: $z\n";
+		$Pubquery = $QueryArray[$z];
+		$Pubquery = substr($Pubquery, 0, -4);
+		$url="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(".$Pubquery."[Title/Abstract]) AND cancer mutation AND hasabstract/&reldate=20&datetype=edat&retmax=1000";
+		GetContents("Yes",$url);
+		echo "Sleeping\n";
+		sleep(60);
+	}
+}
+
+function GetGenomics()
+{
+	$query=60;
+	$url="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Genomics)+NOT+Proteomics+AND%20hasabstract/&reldate=10&datetype=edat&retmax=".$query."&usehistory=y";
+	GetContents("No",$url);
+	
+}
+
+function GetProteomics()
+{
+	$query=60;
+	$url="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=(Proteomics)+NOT+Genomics+AND%20hasabstract/&reldate=10&datetype=edat&retmax=".$query."&usehistory=y";
+	GetContents("No",$url);
+}
+function Activate_Action()
+{
+		 global $servername,$username,$password,$dbname,$Tab,$Action;
+
+	if ($Action === "Delete")
+	{
+		$conn = new mysqli($servername, $username, $password,$dbname);
+		$query="Delete FROM Pubcast";
+		if ($conn->query($query) === TRUE) 
+					{
+						echo "Table Deleted successfully\n";
+					}
+		$conn->close();
+		exit;
+	}
+	elseif($Action === "Add")
+	{
+		switch ($Tab)
+		{
+			case "Genes":
+				 echo "Getting Genes\n";
+				 GetGenes();
+				break;
+			case "Genomics":
+				echo "Getting Genomics\n";
+				GetGenomics();
+				break;
+			case "Proteomics":
+				echo "Getting Proteomics\n";
+				GetProteomics();
+				break;
+		}
+	}
 
 }
+Activate_Action();
 ?>
