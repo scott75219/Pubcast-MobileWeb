@@ -1,11 +1,5 @@
-       var obj={};
-       var objAlt={};
-
-	var PlosOne ={};
-	var Science ={};
-	var Nature ={};       
-	   
-      var $=function(v){return document.getElementById(v);}
+var obj={};
+var objAlt={};
 
 function Parse(url, type) {
 		//$.mobile.loading( 'show', { text: "Loading. Please wait...", textVisible: true, theme: "c"});
@@ -133,40 +127,7 @@ function Parse(url, type) {
    
    
 }
- 
- /*function drawTwitter(Twitterobj){
-    var list="";
-	
-    count=0;
-	var amnt=0;
-    for(var prop in Twitterobj) {
-        if(Twitterobj.hasOwnProperty(prop))
-            ++count;
-    }
-    for (var i=0;i<count;i++)
-	{ 
-		for(var j=0;j<Twitterobj[i].length;j++)
-		{
-		var TestRetweet=Twitterobj[i][j]['text'].substring(0, 2)
-        list=list+"<div id="+amnt+" class=\"divtable\" onclick=\"drawArticle("+amnt+")\"><div id =\"item\" class=\"processinner\">";
-		if(TestRetweet=="RT")
-		{
-			list=list+"<img src=\"img/retweet_on.png\" id=\"retweet_on\" class=\"twitterimg\"</img>"+
-		     "<div id =\"user\"class=\"datejournal\" style=\"width:50%\">"+Twitterobj[i][j]['user']['name']+" retweeted</div>";
-
-		}
-		var re = new RegExp("RT","g");
-		Twitterobj[i][j]['text']=Twitterobj[i][j]['text'].replace(re, "");
-		
-		list=list+"<br /><div id =\"title\"class=\"articletitle\">"+Twitterobj[i][j]['text']+"</div>"+
-        "<br/><div id =\"datejournal\"class=\"datejournal\">"+Twitterobj[i][j]['created_at']+"</div>"+
-        "</div></div>";
-		
-		}
-	}
-	document.getElementById("Process").innerHTML=list;
-	document.getElementById("super").removeChild(load);
-}*/   
+   
 function drawList(obj, amt){
 	    objAlt=obj;
     var list="";
@@ -195,9 +156,6 @@ function drawList(obj, amt){
 
 
 function drawArticle(i){
-     //          location.href = "/usr/scott/tools/Pubcast+/PubcastAbstract.html";       
-   //    document.getElementById("Article").innerHTML=article;
-
         localStorage.setItem("title",objAlt[i]["Title"]);
         localStorage.setItem("authors",objAlt[i]["Authors"]);
         localStorage.setItem("date",objAlt[i]["PubDate"]);
@@ -224,14 +182,10 @@ function drawArticle(i){
 }  
 // handles drawing an error message
 function drawError () {
- //   var container = document.getElementById('output');
- //   container.innerHTML = 'Bummer: there was an error!';
 }
 // handles the response, adds the html
 function drawOutput(responseText) {
-//    var container = document.getElementById('output');
     var Twitterobj = responseText;
-//	obj=JSON.stringify(obj);
 	Twitterobj =JSON.parse(Twitterobj);
 	  localStorage.setItem("Opinion",JSON.stringify(Twitterobj));
 	  localStorage.setItem("TwitterDate",Date.now());
